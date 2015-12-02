@@ -1,0 +1,2 @@
+include indexedsearch/config_spec.ini
+include indexedsearch/templates/indexedsearch/*.html
