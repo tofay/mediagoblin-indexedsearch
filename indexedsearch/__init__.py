@@ -16,8 +16,7 @@
 import os
 import logging
 from mediagoblin.tools import pluginapi
-from mediagoblin.plugins.indexedsearch.lib import (update_index,
-                                                   maybe_create_index)
+from indexedsearch.lib import update_index, maybe_create_index
 
 _log = logging.getLogger(__name__)
 PLUGIN_DIR = os.path.dirname(__file__)
@@ -25,19 +24,19 @@ PLUGIN_DIR = os.path.dirname(__file__)
 
 def setup_plugin():
     _log.info('Setting up indexed search...')
-    config = pluginapi.get_config('mediagoblin.plugins.indexedsearch')
+    config = pluginapi.get_config('indexedsearch')
 
     routes = [
-        ('mediagoblin.plugins.indexedsearch',
+        ('indexedsearch',
          '/search/',
-         'mediagoblin.plugins.indexedsearch.views:search_results_view')]
+         'indexedsearch.views:search_results_view')]
 
     pluginapi.register_routes(routes)
     pluginapi.register_template_path(os.path.join(PLUGIN_DIR, 'templates'))
 
     search_link_style = config.get('SEARCH_LINK_STYLE')
     _log.debug("Search link style was specified as: %r", search_link_style)
-    template_dir = '/mediagoblin/plugins/indexedsearch/'
+    template_dir = 'indexedsearch/'
     if search_link_style == 'button':
         header_template = template_dir + 'search_link_button.html'
     elif search_link_style == 'none':
@@ -52,7 +51,7 @@ def setup_plugin():
 
 
 def setup_index():
-    config = pluginapi.get_config('mediagoblin.plugins.indexedsearch')
+    config = pluginapi.get_config('indexedsearch')
     dirname = config.get('INDEX_DIR')
     update_index(dirname)
 

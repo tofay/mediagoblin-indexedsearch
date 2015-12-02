@@ -17,15 +17,13 @@ from mediagoblin.db.models import MediaEntry
 from mediagoblin.decorators import uses_pagination
 from mediagoblin.tools.response import render_to_response
 from mediagoblin.tools.pagination import Pagination
-
-from mediagoblin.plugins.indexedsearch.lib import INDEX_NAME
-from mediagoblin.plugins.indexedsearch import forms as search_forms
-# from mediagoblin.meddleware.csrf import csrf_exempt
-
-from whoosh.index import open_dir
-from whoosh.qparser import MultifieldParser
 from mediagoblin.tools import pluginapi
 
+from indexedsearch.lib import INDEX_NAME
+import indexedsearch.forms
+
+import whoosh.index
+import whoosh.qparser
 import logging
 _log = logging.getLogger(__name__)
 
@@ -38,30 +36,29 @@ def search_results_view(request, page):
     pagination = None
     query = None
 
-    form = search_forms.SearchForm(
-        request.form)
+    form = indexedsearch.forms.SearchForm(request.form)
 
     # if request.method == 'GET':
     if request.GET.get('query'):
         query = request.GET.get('query')
-        config = pluginapi.get_config('mediagoblin.plugins.indexedsearch')
-        ix = open_dir(config.get('INDEX_DIR'), indexname=INDEX_NAME)
+        config = pluginapi.get_config('indexedsearch')
+        ix = whoosh.index.open_dir(config.get('INDEX_DIR'),
+                                   indexname=INDEX_NAME)
         with ix.searcher() as searcher:
-            query_string = MultifieldParser(
+            query_string = whoosh.qparser.MultifieldParser(
                 ['title', 'description', 'tags'], ix.schema).parse(query)
             results = searcher.search(query_string)
-            import pdb
-            pdb.set_trace()
             result_ids = [result['media_id'] for result in results]
+
             if result_ids:
                 matches = MediaEntry.query.filter(
                     MediaEntry.id.in_(result_ids))
-            pagination = Pagination(page, matches)
-            media_entries = pagination()
+                pagination = Pagination(page, matches)
+                media_entries = pagination()
 
     return render_to_response(
         request,
-        'mediagoblin/plugins/indexedsearch/results.html',
+        'indexedsearch/results.html',
         {'media_entries': media_entries,
          'pagination': pagination,
          'form': form})
