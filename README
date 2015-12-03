@@ -2,34 +2,42 @@
 mediagoblin-indexedsearch
 =======================
 
-This plugin adds support for searching media in Gnu MediaGoblin.
+This is a plugin for Gnu Mediagoblin that adds support for searching media.
 
 By default, the search function will query the tags, title and description fields
 of media for the given phrase.
 
 More complex queries are supported, e.g searching for media with tagged with "hello"
 and not tagged with "goodbye" (tags:hello -tags:goodbye), or searching for any
-media added by the user "tom" (user:tom). 
+media added by the user "tom" (user:tom).
 
-See http://whoosh.readthedocs.org/en/latest/querylang.html for more syntax info.
+(See http://whoosh.readthedocs.org/en/latest/querylang.html for more syntax info.)
 
 What? Can't search for existing media entries?! This plugin relies on a hook not present in any version mediagoblin. You'll need to add the line '"hook_runall("db_setup")' in mediagoblin's code,
 at some point after db initialization (I added it to mediagoblin/init/__init__.py, at the end of the the setup_database function).
 
+This plugin is almost entirely based on an existing search plugin, https://github.com/ayleph/mediagoblin-basicsearch/,
+but uses a search index for queries.
+
+
 Set up the search plugin
 ========================
 
-1. Clone the search plugin repository from GitHub. ::
+1. Clone the search plugin repository from GitHub.
 
     $ git clone https://github.com/tofay/mediagoblin-indexedsearch.git
 
-2. Copy the indexedsearch folder to your MediaGoblin plugin path. ::
+2. Create a source tarball.
 
-    $ cp -r mediagoblin-indexedsearch/indexedsearch /path/to/mediagoblin/mediagoblin/plugins/
+    $ /path/to/mediagoblin/bin/python setup.py sdist
 
-3. Enable the mediagoblin-indexedsearch plugin by adding the following line to the ``[plugins]`` section of your mediagoblin_local.ini file. ::
+2. Install this into your mediagoblin virtualenv.
 
-    [[mediagoblin.plugins.indexedsearch]]
+    $ /path/to/mediagoblin/bin/pip install dist/mediagoblin-indexedsearch-#VERSION#.tar.gz
+
+3. Enable the mediagoblin-indexedsearch plugin by adding the following line to the ``[plugins]`` section of your mediagoblin_local.ini file.
+
+    [[indexedsearch]]
 
 4. Restart your MediaGoblin instance for the config file changes to be effective.
 
@@ -42,13 +50,21 @@ The search plugin adds a search link to the top header bar of the MediaGoblin in
 * ``button`` displays an action button link next to the Log In link.
 * ``none`` does not display a link. This is useful if you want to create your own search link in a user_dev template or custom theme.
 
-If you choose to specify the display style, add it to your mediagoblin_local.ini like this. ::
+If you choose to specify the display style, add it to your mediagoblin_local.ini like this.
 
-    [[mediagoblin.plugins.indexedsearch]]
+    [[indexedsearch]]
     SEARCH_LINK_STYLE = 'link'
 
-If you choose style ``none`` and wish to create your own search link, use the syntax below as a guide. ::
+If you choose style ``none`` and wish to create your own search link, use the syntax below as a guide.
 
     <a href="{{ request.urlgen('mediagoblin.plugins.indexedsearch') }}">
     {%- trans %}Search{% endtrans -%}
     </a>
+
+You can all specify the directory in which the plugin will create a search index (the plugin will
+create the directory if it doesn't exist, assuming correct permissions etc.). By default the index
+will be created in /path/to/mediagoblin/user_dev/searchindex, to change this specify it in
+mediagoblin_local.ini likes this.
+
+[[indexedsearch]]
+INDEX_DIR = '/path/to/index/directory'
