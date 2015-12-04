@@ -45,7 +45,7 @@ def index_entry(writer, media):
                     'time': media.updated,
                     'tags': u'{0}'.format(tags)}
 
-    if media.actor:
+    if media.get_actor:
         index_fields['user'] = u'{0}'.format(media.get_actor.username)
 
     writer.update_document(**index_fields)
