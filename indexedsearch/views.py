@@ -35,12 +35,10 @@ def search_results_view(request, page):
     media_entries = None
     pagination = None
     query = None
+    form = indexedsearch.forms.SearchForm(request.GET)
 
-    form = indexedsearch.forms.SearchForm(request.form)
-
-    # if request.method == 'GET':
-    if request.GET.get('query'):
-        query = request.GET.get('query')
+    if request.method == 'GET' and form.validate():
+        query = form.query.data
         config = pluginapi.get_config('indexedsearch')
         ix = whoosh.index.open_dir(config.get('INDEX_DIR'),
                                    indexname=INDEX_NAME)
