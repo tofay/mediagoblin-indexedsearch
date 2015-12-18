@@ -41,7 +41,7 @@ def test_maybe_create_index(test_app):
 
     # Add a media entry, call maybe_create_index, and check that it didn't
     # create a new index (by checking that the media entry is in the index).
-    fixture_media_entry(title=u'media1')
+    fixture_media_entry(title=u'media1', state=u'processed')
     assert not indexedsearch.lib.maybe_create_index(dirname)
 
     ix = whoosh.index.open_dir(dirname, indexname=indexedsearch.lib.INDEX_NAME)
@@ -66,11 +66,14 @@ def test_update_index(test_app):
 
     fake_time = datetime.datetime.utcnow()
     media_a = fixture_media_entry(title=u'mediaA', save=False,
-                                  expunge=False, fake_upload=False)
+                                  expunge=False, fake_upload=False,
+                                  state=u'processed')
     media_b = fixture_media_entry(title=u'mediaB', save=False,
-                                  expunge=False, fake_upload=False)
+                                  expunge=False, fake_upload=False,
+                                  state=u'processed')
     media_c = fixture_media_entry(title=u'mediaC', save=False,
-                                  expunge=False, fake_upload=False)
+                                  expunge=False, fake_upload=False,
+                                  state=u'processed')
     media_a.description = u'DescriptionA'
     media_b.description = u'DescriptionB'
     media_c.description = u'DescriptionC'
@@ -140,9 +143,11 @@ def test_media_entry_change_and_delete(test_app):
     dirname = pluginapi.get_config('indexedsearch').get('INDEX_DIR')
 
     media_a = fixture_media_entry(title=u'mediaA', save=False,
-                                  expunge=False, fake_upload=False)
+                                  expunge=False, fake_upload=False,
+                                  state=u'processed')
     media_b = fixture_media_entry(title=u'mediaB', save=False,
-                                  expunge=False, fake_upload=False)
+                                  expunge=False, fake_upload=False,
+                                  state=u'processed')
     media_a.description = u'DescriptionA'
     media_b.description = u'DescriptionB'
     Session.add(media_a)
