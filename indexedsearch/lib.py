@@ -41,7 +41,12 @@ class MediaEntrySchema(whoosh.fields.SchemaClass):
 
 
 def index_entry(writer, media):
-    _log.info("Indexing: " + media.title)
+    _log.info("Indexing: %d" % media.id)
+
+    if media.state != u'processed':
+        _log.info("Ignoring: not yet processed")
+        return
+
     tags = u' '.join([tag['name'] for tag in media.tags])
     # collections = u','.join([col.title for col in media.collections])
     index_fields = {'title': u'{0}'.format(media.title),
