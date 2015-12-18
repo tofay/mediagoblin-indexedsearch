@@ -16,7 +16,7 @@
 import os
 import logging
 from mediagoblin.tools import pluginapi
-from indexedsearch.lib import update_index, maybe_create_index
+from indexedsearch.lib import update_index, maybe_create_index, update_entry
 
 _log = logging.getLogger(__name__)
 PLUGIN_DIR = os.path.dirname(__file__)
@@ -50,12 +50,20 @@ def setup_plugin():
     maybe_create_index(config.get('INDEX_DIR'))
 
 
-def setup_index():
+def setup_index(mediagoblin_app):
     config = pluginapi.get_config('indexedsearch')
     dirname = config.get('INDEX_DIR')
-    update_index(dirname)
+
+    update_index.subtask().delay(dirname)
+
+    return mediagoblin_app
+
+
+def update_collection_item(collection_item):
+    update_entry.subtask().delay(collection_item.get_object())
 
 hooks = {
     'setup': setup_plugin,
-    'db_setup': setup_index
+    'wrap_wsgi': setup_index,  # not really designed for this purpose...
+    # 'collection_add_media': update_collection_item
 }

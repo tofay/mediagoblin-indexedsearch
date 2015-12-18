@@ -22,9 +22,9 @@ import whoosh.writing
 from mediagoblin.tools import pluginapi
 from mediagoblin.db.models import User, LocalUser, MediaEntry
 from mediagoblin.db.base import Session
-from mediagoblin.tests.tools import fixture_add_user, fixture_media_entry
-
-
+from mediagoblin.tests.tools import (fixture_add_user, fixture_media_entry,
+                                     fixture_add_collection)
+from mediagoblin.user_pages.lib import add_media_to_collection
 
 
 def test_maybe_create_index(test_app):
@@ -170,3 +170,6 @@ def test_media_entry_change_and_delete(test_app):
 
         query = qp.parse(u'mediaB')
         assert len(searcher.search(query)) == 0
+
+    col1 = fixture_add_collection(u'collection', user=media_a.get_actor)
+    add_media_to_collection(col1, media_a, '')

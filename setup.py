@@ -34,14 +34,13 @@ class PyTest(TestCommand):
     def run_tests(self):
         # import here, cause outside the eggs aren't loaded
         import pytest
-        pytest.set_trace()
         errno = pytest.main(self.pytest_args)
         sys.exit(errno)
 
 
 setup(
     name='mediagoblin-indexedsearch',
-    version='0.1dev',
+    version='0.1',
     packages=find_packages(),
     include_package_data=True,
     package_data={'': ['indexedsearch/config_spec.ini']},

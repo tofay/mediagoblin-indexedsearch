@@ -15,10 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import logging
+
+import celery
+
 import whoosh.index
 import whoosh.fields
 import whoosh.writing
-from mediagoblin.db.models import MediaEntry, User
+from mediagoblin.db.models import MediaEntry
 from mediagoblin.tools import pluginapi
 from sqlalchemy import event
 
@@ -31,7 +34,8 @@ class MediaEntrySchema(whoosh.fields.SchemaClass):
     media_id = whoosh.fields.NUMERIC(signed=False, unique=True, stored=True)
     title = whoosh.fields.TEXT
     description = whoosh.fields.TEXT
-    tags = whoosh.fields.KEYWORD
+    tag = whoosh.fields.KEYWORD
+    # collection = whoosh.fields.KEYWORD(commas=True)
     time = whoosh.fields.DATETIME(stored=True)
     user = whoosh.fields.TEXT
 
@@ -39,11 +43,14 @@ class MediaEntrySchema(whoosh.fields.SchemaClass):
 def index_entry(writer, media):
     _log.info("Indexing: " + media.title)
     tags = u' '.join([tag['name'] for tag in media.tags])
+    # collections = u','.join([col.title for col in media.collections])
     index_fields = {'title': u'{0}'.format(media.title),
                     'description': u'{0}'.format(media.description),
                     'media_id': media.id,
                     'time': media.updated,
-                    'tags': u'{0}'.format(tags)}
+                    'tag': u'{0}'.format(tags),
+                    # 'collection': u'{0}'.format(collections),
+                    }
 
     if media.get_actor:
         index_fields['user'] = u'{0}'.format(media.get_actor.username)
@@ -51,6 +58,7 @@ def index_entry(writer, media):
     writer.update_document(**index_fields)
 
 
+@celery.task
 def update_index(dirname):
     _log.info("Updating existing index in " + dirname)
     ix = whoosh.index.open_dir(dirname, indexname=INDEX_NAME)
@@ -115,9 +123,8 @@ def maybe_create_index(dirname):
     return new_index_required
 
 
-@event.listens_for(MediaEntry, 'after_update')
-@event.listens_for(MediaEntry, 'after_insert')
-def media_entry_change(mapper, connection, media_entry):
+@celery.task
+def update_entry(media_entry):
     config = pluginapi.get_config('indexedsearch')
     dirname = config.get('INDEX_DIR')
     ix = whoosh.index.open_dir(dirname, indexname=INDEX_NAME)
@@ -126,11 +133,22 @@ def media_entry_change(mapper, connection, media_entry):
         index_entry(writer, media_entry)
 
 
-@event.listens_for(MediaEntry, 'after_delete')
-def media_entry_deleted(mapper, connection, media_entry):
+@event.listens_for(MediaEntry, 'after_update')
+@event.listens_for(MediaEntry, 'after_insert')
+def media_entry_change(mapper, connection, media_entry):
+    update_entry.subtask().delay(media_entry)
+
+
+@celery.task
+def delete_entry(media_entry):
     config = pluginapi.get_config('indexedsearch')
     dirname = config.get('INDEX_DIR')
     ix = whoosh.index.open_dir(dirname, indexname=INDEX_NAME)
     with whoosh.writing.AsyncWriter(ix) as writer:
         _log.info("Unindexing media entry with id: %d" % media_entry.id)
         writer.delete_by_term('media_id', media_entry.id)
+
+
+@event.listens_for(MediaEntry, 'after_delete')
+def media_entry_deleted(mapper, connection, media_entry):
+    delete_entry.subtask().delay(media_entry)

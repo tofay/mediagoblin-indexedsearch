@@ -18,6 +18,7 @@ from mediagoblin.decorators import uses_pagination
 from mediagoblin.tools.response import render_to_response
 from mediagoblin.tools.pagination import Pagination
 from mediagoblin.tools import pluginapi
+from mediagoblin.meddleware.csrf import csrf_exempt
 
 from indexedsearch.lib import INDEX_NAME
 import indexedsearch.forms
@@ -28,16 +29,16 @@ import logging
 _log = logging.getLogger(__name__)
 
 
-# @csrf_exempt
+@csrf_exempt
 @uses_pagination
 def search_results_view(request, page):
 
     media_entries = None
     pagination = None
     query = None
-    form = indexedsearch.forms.SearchForm(request.GET)
+    form = indexedsearch.forms.SearchForm(request.form)
 
-    if request.method == 'GET' and form.validate():
+    if request.method == 'POST' and form.validate():
         query = form.query.data
         config = pluginapi.get_config('indexedsearch')
         ix = whoosh.index.open_dir(config.get('INDEX_DIR'),
