@@ -8,15 +8,12 @@ By default, the search function will query the tags, title and description field
 of media for the given phrase.
 
 More complex queries are supported, e.g searching for media with tagged with "hello"
-and not tagged with "goodbye" (tags:hello -tags:goodbye), or searching for any
+and not tagged with "goodbye" (tag:hello -tag:goodbye), or searching for any
 media added by the user "tom" (user:tom).
 
 (See http://whoosh.readthedocs.org/en/latest/querylang.html for more syntax info.)
 
-What? Can't search for existing media entries?! This plugin relies on a hook not present in any version mediagoblin. You'll need to add the line '"hook_runall("db_setup")' in mediagoblin's code,
-at some point after db initialization (I added it to mediagoblin/init/__init__.py, at the end of the the setup_database function).
-
-This plugin is almost entirely based on an existing search plugin, https://github.com/ayleph/mediagoblin-basicsearch/,
+This plugin is based on an existing search plugin, https://github.com/ayleph/mediagoblin-basicsearch/,
 but uses a search index for queries.
 
 
@@ -57,7 +54,7 @@ If you choose to specify the display style, add it to your mediagoblin_local.ini
 
 If you choose style ``none`` and wish to create your own search link, use the syntax below as a guide.
 
-    <a href="{{ request.urlgen('mediagoblin.plugins.indexedsearch') }}">
+    <a href="{{ request.urlgen('indexedsearch') }}">
     {%- trans %}Search{% endtrans -%}
     </a>
 
