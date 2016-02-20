@@ -1,7 +1,8 @@
 Search plugin for GNU Mediagoblin
 ###############
 
-|license_badge| |pypi_badge| |version_badge| |status_badge|
+|license_badge| |pypi_badge| |version_badge| 
+|travis_badge| |status_badge|
 
 .. |license_badge| image:: https://img.shields.io/pypi/l/mediagoblin-indexedsearch.svg
    :target: https://en.wikipedia.org/wiki/Affero_General_Public_License
@@ -11,6 +12,12 @@ Search plugin for GNU Mediagoblin
 
 .. |version_badge| image:: https://img.shields.io/pypi/pyversions/mediagoblin-indexedsearch.svg
    :target: https://pypi.python.org/pypi/mediagoblin-indexedsearch
+
+.. |status_badge| image:: https://img.shields.io/pypi/status/mediagoblin-indexedsearch.svg
+   :target: https://pypi.python.org/pypi/mediagoblin-indexedsearch
+   
+.. |travis_badge| image:: https://travis-ci.org/tofay/mediagoblin-indexedsearch.svg?branch=master
+   :target: https://travis-ci.org/tofay/mediagoblin-indexedsearch.svg?branch=master
 
 .. |status_badge| image:: https://img.shields.io/pypi/status/mediagoblin-indexedsearch.svg
    :target: https://pypi.python.org/pypi/mediagoblin-indexedsearch
