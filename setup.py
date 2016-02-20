@@ -41,6 +41,8 @@ class PyTest(TestCommand):
 setup(
     name='mediagoblin-indexedsearch',
     version='0.1',
+    author='Tom Fay',
+    author_email='tom@teamfay.co.uk',
     packages=find_packages(),
     include_package_data=True,
     package_data={'': ['indexedsearch/config_spec.ini']},
