@@ -43,7 +43,7 @@ Enable the plugin by adding the following line to the ``[plugins]`` section of y
 
 
 The following parameters can be specified in the indexedsearch section of your mediagoblin
-config file.
+config file:
 
 SEARCH_LINK_STYLE = 'link'
 
