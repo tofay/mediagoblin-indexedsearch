@@ -38,17 +38,23 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
+def readme():
+    with open('README.rst') as f:
+        return f.read()
+
 setup(
     name='mediagoblin-indexedsearch',
     version='0.1',
+    description=("A search plugin for GNU mediagoblin."),
+    long_description=readme(),
+    url='https://github.com/tofay/mediagoblin-indexedsearch',
     author='Tom Fay',
     author_email='tom@teamfay.co.uk',
+    license='AGPLv3',
     packages=find_packages(),
     include_package_data=True,
     package_data={'': ['indexedsearch/config_spec.ini']},
     install_requires=['whoosh'],
-    license='AGPLv3',
-    long_description=open('README').read(),
     tests_require=['pytest'],
     cmdclass={'test': PyTest}
 )

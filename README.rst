@@ -1,8 +1,23 @@
-=======================
-mediagoblin-indexedsearch
-=======================
+Search plugin for GNU Mediagoblin
+###############
 
-This is a plugin for Gnu Mediagoblin that adds support for searching media.
+|license_badge| |pypi_badge| |version_badge| |status_badge|
+
+.. |license_badge| image:: https://img.shields.io/pypi/l/mediagoblin-indexedsearch.svg
+   :target: https://en.wikipedia.org/wiki/Affero_General_Public_License
+
+.. |pypi_badge| image:: https://img.shields.io/pypi/v/mediagoblin-indexedsearch.svg
+   :target: https://pypi.python.org/pypi/mediagoblin-indexedsearch
+
+.. |version_badge| image:: https://img.shields.io/pypi/pyversions/mediagoblin-indexedsearch.svg
+   :target: https://pypi.python.org/pypi/mediagoblin-indexedsearch
+
+.. |status_badge| image:: https://img.shields.io/pypi/status/mediagoblin-indexedsearch.svg
+   :target: https://pypi.python.org/pypi/mediagoblin-indexedsearch
+
+.. END_BADGES_TAG
+
+``mediagoblin-indexedsearch`` is a plugin for GNU Mediagoblin that adds support for searching media.
 
 By default, the search function will query the tags, title and description fields
 of media for the given phrase.
@@ -16,32 +31,15 @@ media added by the user "tom" (user:tom).
 This plugin is based on an existing search plugin, https://github.com/ayleph/mediagoblin-basicsearch/,
 but uses a search index for queries.
 
-Not tested on python 3.
+.. END_DESCRIPTION_TAG
 
-
-Set up the search plugin
-========================
-
-1. Clone the search plugin repository from GitHub.
-
-    $ git clone https://github.com/tofay/mediagoblin-indexedsearch.git
-
-2. Create a source tarball.
-
-    $ /path/to/mediagoblin/bin/python setup.py sdist
-
-2. Install this into your mediagoblin virtualenv.
-
-    $ /path/to/mediagoblin/bin/pip install dist/mediagoblin-indexedsearch-#VERSION#.tar.gz
-
-3. Enable the mediagoblin-indexedsearch plugin by adding the following line to the ``[plugins]`` section of your mediagoblin_local.ini file.
-
-    [[indexedsearch]]
-
-4. Restart your MediaGoblin instance for the config file changes to be effective.
-
-Configure the search plugin
+Setting up the search plugin
 ===========================
+
+Enable the plugin by adding the following line to the ``[plugins]`` section of your mediagoblin config file.
+
+[[indexedsearch]]
+
 
 The following parameters can be specified in the indexedsearch section of your mediagoblin
 config file.
