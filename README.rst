@@ -33,6 +33,7 @@ but uses a search index for queries.
 
 .. END_DESCRIPTION_TAG
 
+
 Setting up the search plugin
 ===========================
 
