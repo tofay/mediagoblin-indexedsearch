@@ -16,7 +16,7 @@ media added by the user "tom" (user:tom).
 This plugin is based on an existing search plugin, https://github.com/ayleph/mediagoblin-basicsearch/,
 but uses a search index for queries.
 
-Not tested on python 3.
+Testing on python 3.5 and python 2.7.
 
 
 Set up the search plugin
