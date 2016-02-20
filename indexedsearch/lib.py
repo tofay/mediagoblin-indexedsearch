@@ -27,7 +27,8 @@ from sqlalchemy import event
 
 
 _log = logging.getLogger(__name__)
-INDEX_NAME = "media_entries"
+INDEX_NAME = 'media_entries'
+DEFAULT_SEARCH_FIELDS = ['title', 'description', 'tag']
 
 
 class MediaEntrySchema(whoosh.fields.SchemaClass):
@@ -44,7 +45,7 @@ def index_entry(writer, media):
     _log.info("Indexing: %d" % media.id)
 
     if media.state != u'processed':
-        _log.info("Ignoring: not yet processed")
+        _log.info('Ignoring: not yet processed')
         return
 
     tags = u' '.join([tag['name'] for tag in media.tags])

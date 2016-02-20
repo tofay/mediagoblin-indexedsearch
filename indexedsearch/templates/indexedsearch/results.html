@@ -24,11 +24,15 @@
 {%- endblock mediagoblin_head %}
 
 {% block mediagoblin_content %}
-  <form method="POST" action="" id="search">
-    {{ wtforms_util.render_divs(form) }}
-    {#<input type=submit />#}
-    <input type="submit" value="{% trans %}Search{% endtrans %}" class="button_action" />
-  </form>
+  {% if form.show == true %}
+    <form method="GET" action="{{ request.urlgen('indexedsearch') }}"
+          id="search">
+      {{ wtforms_util.render_divs(form) }}
+      <input type="submit" value="{% trans %}Search{% endtrans %}"
+             class="button_action" />
+    </form>
+  {% endif %}
+
   <h2>{% trans %}Search results{% endtrans %}</h2>
   {{ object_gallery(request, media_entries, pagination) }}
 {% endblock %}

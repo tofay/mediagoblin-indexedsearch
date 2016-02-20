@@ -26,36 +26,37 @@ def setup_plugin():
     _log.info('Setting up indexed search...')
     config = pluginapi.get_config('indexedsearch')
 
+    if config.get('USERS_ONLY'):
+        view = 'user_search_results_view'
+    else:
+        view = 'search_resuls_view'
+
     routes = [
         ('indexedsearch',
          '/search/',
-         'indexedsearch.views:search_results_view')]
+         'indexedsearch.views:' + view)]
 
     pluginapi.register_routes(routes)
     pluginapi.register_template_path(os.path.join(PLUGIN_DIR, 'templates'))
 
     search_link_style = config.get('SEARCH_LINK_STYLE')
     _log.debug("Search link style was specified as: %r", search_link_style)
-    template_dir = 'indexedsearch/'
-    if search_link_style == 'button':
-        header_template = template_dir + 'search_link_button.html'
-    elif search_link_style == 'none':
-        header_template = template_dir + 'search_link_none.html'
+
+    if search_link_style in ['button', 'link', 'none', 'form']:
+        header_template = ('indexedsearch/search_link_%s.html' %
+                           search_link_style)
     else:
-        header_template = template_dir + 'search_link_default.html'
+        header_template = 'indexedsearch/search_link_form.html'
 
     pluginapi.register_template_hooks(
         {'header_extra': header_template})
-
     maybe_create_index(config.get('INDEX_DIR'))
 
 
 def setup_index(mediagoblin_app):
     config = pluginapi.get_config('indexedsearch')
     dirname = config.get('INDEX_DIR')
-
     update_index.subtask().delay(dirname)
-
     return mediagoblin_app
 
 

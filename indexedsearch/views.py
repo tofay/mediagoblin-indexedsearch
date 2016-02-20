@@ -14,13 +14,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from mediagoblin.db.models import MediaEntry
-from mediagoblin.decorators import uses_pagination
+from mediagoblin.decorators import require_active_login, uses_pagination
 from mediagoblin.tools.response import render_to_response
 from mediagoblin.tools.pagination import Pagination
 from mediagoblin.tools import pluginapi
 from mediagoblin.meddleware.csrf import csrf_exempt
 
-from indexedsearch.lib import INDEX_NAME
+from indexedsearch.lib import INDEX_NAME, DEFAULT_SEARCH_FIELDS
 import indexedsearch.forms
 
 import whoosh.index
@@ -29,23 +29,34 @@ import logging
 _log = logging.getLogger(__name__)
 
 
+@require_active_login
+def user_search_results_view(request):
+    return search_results_view(request)
+
+
 @csrf_exempt
 @uses_pagination
 def search_results_view(request, page):
-
     media_entries = None
     pagination = None
-    query = None
     form = indexedsearch.forms.SearchForm(request.form)
 
-    if request.method == 'POST' and form.validate():
-        query = form.query.data
-        config = pluginapi.get_config('indexedsearch')
+    config = pluginapi.get_config('indexedsearch')
+    if config.get('SEARCH_LINK_STYLE') == 'form':
+        form.show = False
+    else:
+        form.show = True
+
+    query = None
+    if request.method == 'GET' and 'q' in request.GET:
+        query = request.GET['q']
+
+    if query:
         ix = whoosh.index.open_dir(config.get('INDEX_DIR'),
                                    indexname=INDEX_NAME)
         with ix.searcher() as searcher:
             query_string = whoosh.qparser.MultifieldParser(
-                ['title', 'description', 'tags'], ix.schema).parse(query)
+                DEFAULT_SEARCH_FIELDS, ix.schema).parse(query)
             results = searcher.search(query_string)
             result_ids = [result['media_id'] for result in results]
 
