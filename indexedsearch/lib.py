@@ -13,6 +13,8 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from __future__ import unicode_literals
+
 import os
 import logging
 
@@ -44,22 +46,24 @@ class MediaEntrySchema(whoosh.fields.SchemaClass):
 def index_entry(writer, media):
     _log.info("Indexing: %d" % media.id)
 
-    if media.state != u'processed':
+    if media.state != 'processed':
         _log.info('Ignoring: not yet processed')
         return
 
-    tags = u' '.join([tag['name'] for tag in media.tags])
+    tags = ' '.join([tag['name'] for tag in media.tags])
     # collections = u','.join([col.title for col in media.collections])
-    index_fields = {'title': u'{0}'.format(media.title),
-                    'description': u'{0}'.format(media.description),
+    index_fields = {'title': media.title,
+                    'description': media.description,
                     'media_id': media.id,
                     'time': media.updated,
-                    'tag': u'{0}'.format(tags),
-                    # 'collection': u'{0}'.format(collections),
-                    }
+                    'tag': tags}
+    # get_uploader was renamed to get get_actor
+    user = getattr(media, 'get_actor', None)
+    if not user:
+        user = getattr(media, 'get_uploader', None)
 
-    if media.get_actor:
-        index_fields['user'] = u'{0}'.format(media.get_actor.username)
+    if user:
+        index_fields['user'] = user.username
 
     writer.update_document(**index_fields)
 
