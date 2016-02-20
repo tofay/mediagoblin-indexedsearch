@@ -6,3 +6,6 @@ python:
 script: "python setup.py test"
 before_install:
   - pip install mediagoblin lxml pillow
+  - import pdb; pdb.set_trace()
+  # Workaround but in mediagoblin.tests.tools:fixture_media_entry
+  - find . -name tools.py | grep 'mediagoblin/tests/tools.py' | xargs sed -i 's/entry.uploader = uploader/entry.actor = uploader/g'
