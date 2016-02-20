@@ -17,7 +17,7 @@ Search plugin for GNU Mediagoblin
    :target: https://pypi.python.org/pypi/mediagoblin-indexedsearch
    
 .. |travis_badge| image:: https://travis-ci.org/tofay/mediagoblin-indexedsearch.svg?branch=master
-   :target: https://travis-ci.org/tofay/mediagoblin-indexedsearch.svg?branch=master
+   :target: https://travis-ci.org/tofay/mediagoblin-indexedsearch
 
 .. |status_badge| image:: https://img.shields.io/pypi/status/mediagoblin-indexedsearch.svg
    :target: https://pypi.python.org/pypi/mediagoblin-indexedsearch
