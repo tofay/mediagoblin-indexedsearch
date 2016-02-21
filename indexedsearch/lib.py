@@ -31,9 +31,13 @@ from sqlalchemy import event
 _log = logging.getLogger(__name__)
 INDEX_NAME = 'media_entries'
 DEFAULT_SEARCH_FIELDS = ['title', 'description', 'tag']
+""" List of the index fields that are searched by default.
+"""
 
 
 class MediaEntrySchema(whoosh.fields.SchemaClass):
+    """ Whoosh schema for MediaEntry objects.
+    """
     media_id = whoosh.fields.NUMERIC(signed=False, unique=True, stored=True)
     title = whoosh.fields.TEXT
     description = whoosh.fields.TEXT
@@ -44,6 +48,15 @@ class MediaEntrySchema(whoosh.fields.SchemaClass):
 
 
 def index_entry(writer, media):
+    """ Stores a media entry in the index.
+
+    Uses the given writer to index the given media entry. Unprocessed media
+    entries are ignored.
+
+    Args:
+        writer: A writer for the whoosh index.
+        media: A MediaEntry for indexing.
+    """
     _log.info("Indexing: %d" % media.id)
 
     if media.state != 'processed':
@@ -57,19 +70,25 @@ def index_entry(writer, media):
                     'media_id': media.id,
                     'time': media.updated,
                     'tag': tags}
-    # get_uploader was renamed to get get_actor
-    user = getattr(media, 'get_actor', None)
-    if not user:
-        user = getattr(media, 'get_uploader', None)
 
-    if user:
-        index_fields['user'] = user.username
+    if media.get_actor:
+        index_fields['user'] = media.get_actor.username
 
     writer.update_document(**index_fields)
 
 
 @celery.task
 def update_index(dirname):
+    """ Make an index consistent with the database.
+
+    Removes media entries from the index that aren't in the database.
+    Indexes media entries that are in the database but not in the index.
+    Re-indexes media entries that have been updated since they were last
+    indexed.
+
+    Args:
+        dirname: directory containing the index.
+    """
     _log.info("Updating existing index in " + dirname)
     ix = whoosh.index.open_dir(dirname, indexname=INDEX_NAME)
 
@@ -113,7 +132,8 @@ def maybe_create_index(dirname):
 
     If the index doesn't exist in the directory, then it will be created.
 
-    Returns: True if a new index was created, otherwise returns False.
+    Returns:
+        True if a new index was created, otherwise returns False.
     """
     new_index_required = False
     # If the directory doesn't exist, or the index doesn't exist in the
@@ -135,6 +155,12 @@ def maybe_create_index(dirname):
 
 @celery.task
 def update_entry(media_entry):
+    """ Update the entry in the index.
+
+    (Contents of this method could be in media_entry_change, but have been
+    moved here for the future possibility of doing this asynchronously with
+    celery)
+    """
     config = pluginapi.get_config('indexedsearch')
     dirname = config.get('INDEX_DIR')
     ix = whoosh.index.open_dir(dirname, indexname=INDEX_NAME)
@@ -146,11 +172,15 @@ def update_entry(media_entry):
 @event.listens_for(MediaEntry, 'after_update')
 @event.listens_for(MediaEntry, 'after_insert')
 def media_entry_change(mapper, connection, media_entry):
-    update_entry.subtask().delay(media_entry)
+    """ sqlalchemy hook for indexing media entries
+    """
+    update_entry(media_entry)
 
 
 @celery.task
 def delete_entry(media_entry):
+    """ Like update_entry, but for removal
+    """
     config = pluginapi.get_config('indexedsearch')
     dirname = config.get('INDEX_DIR')
     ix = whoosh.index.open_dir(dirname, indexname=INDEX_NAME)
@@ -161,4 +191,6 @@ def delete_entry(media_entry):
 
 @event.listens_for(MediaEntry, 'after_delete')
 def media_entry_deleted(mapper, connection, media_entry):
-    delete_entry.subtask().delay(media_entry)
+    """ sqlalchemy hook for removing media entries
+    """
+    delete_entry(media_entry)

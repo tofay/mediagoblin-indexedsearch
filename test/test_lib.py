@@ -42,7 +42,6 @@ def test_maybe_create_index(test_app):
     # create a new index (by checking that the media entry is in the index).
     media1 = fixture_media_entry(title='media1', state='processed', save=False,
                                  expunge=False, fake_upload=False,)
-    media1.updated = datetime.datetime.now()
     Session.add(media1)
     Session.commit()
 
@@ -81,9 +80,6 @@ def test_update_index(test_app):
     media_a.description = 'DescriptionA'
     media_b.description = 'DescriptionB'
     media_c.description = 'DescriptionC'
-    media_a.updated = datetime.datetime.now()
-    media_b.updated = datetime.datetime.now()
-    media_c.updated = datetime.datetime.now()
     Session.add(media_a)
     Session.add(media_b)
     Session.add(media_c)
@@ -155,8 +151,6 @@ def test_media_entry_change_and_delete(test_app):
     media_b = fixture_media_entry(title='mediaB', save=False,
                                   expunge=False, fake_upload=False,
                                   state='processed')
-    media_a.updated = datetime.datetime.now()
-    media_b.updated = datetime.datetime.now()
     media_a.description = 'DescriptionA'
     media_b.description = 'DescriptionB'
     Session.add(media_a)

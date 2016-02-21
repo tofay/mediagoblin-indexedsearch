@@ -1,7 +1,7 @@
 Search plugin for GNU Mediagoblin
 ###############
 
-|license_badge| |pypi_badge| |version_badge| 
+|license_badge| |pypi_badge| |version_badge|
 |travis_badge| |status_badge|
 
 .. |license_badge| image:: https://img.shields.io/pypi/l/mediagoblin-indexedsearch.svg
@@ -15,7 +15,7 @@ Search plugin for GNU Mediagoblin
 
 .. |status_badge| image:: https://img.shields.io/pypi/status/mediagoblin-indexedsearch.svg
    :target: https://pypi.python.org/pypi/mediagoblin-indexedsearch
-   
+
 .. |travis_badge| image:: https://travis-ci.org/tofay/mediagoblin-indexedsearch.svg?branch=master
    :target: https://travis-ci.org/tofay/mediagoblin-indexedsearch
 
@@ -23,6 +23,8 @@ Search plugin for GNU Mediagoblin
    :target: https://pypi.python.org/pypi/mediagoblin-indexedsearch
 
 .. END_BADGES_TAG
+
+N.B Only works with unreleased dev version of mediagoblin (0.9.0)
 
 ``mediagoblin-indexedsearch`` is a plugin for GNU Mediagoblin that adds support for searching media.
 

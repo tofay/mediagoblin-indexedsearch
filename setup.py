@@ -44,7 +44,7 @@ def readme():
 
 setup(
     name='mediagoblin-indexedsearch',
-    version='0.1',
+    version='0.1dev',
     description=("A search plugin for GNU mediagoblin."),
     long_description=readme(),
     url='https://github.com/tofay/mediagoblin-indexedsearch',
@@ -62,8 +62,8 @@ setup(
         'License :: OSI Approved :: GNU Affero General Public License v3',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7'
-        #'Programming Language :: Python :: 3',
-        #'Programming Language :: Python :: 3.4',
-        #'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
     ]
 )
