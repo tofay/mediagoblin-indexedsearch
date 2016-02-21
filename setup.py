@@ -56,5 +56,14 @@ setup(
     package_data={'': ['indexedsearch/config_spec.ini']},
     install_requires=['whoosh'],
     tests_require=['pytest'],
-    cmdclass={'test': PyTest}
+    cmdclass={'test': PyTest},
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'License :: OSI Approved :: GNU Affero General Public License v3',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7'
+        #'Programming Language :: Python :: 3',
+        #'Programming Language :: Python :: 3.4',
+        #'Programming Language :: Python :: 3.5',
+    ]
 )
