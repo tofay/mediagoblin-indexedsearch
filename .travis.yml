@@ -7,4 +7,4 @@ script: "python setup.py test"
 before_install:
   - pip install mediagoblin lxml pillow
   # Don't run_dbupdate in get_app: it won't work due to missing alembic config and script folder for migrations.
-  - find ../../../virtualenv/ -name tools.py | grep mediagoblin/tests/ | xargs sed -i 's/run_dbupdate(app/#run_dbupdate(app/g'
+  - find /home/travis/virtualenv/ -name tools.py | grep mediagoblin/tests/ | xargs sed -i 's/run_dbupdate(app/#run_dbupdate(app/g'
