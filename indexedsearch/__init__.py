@@ -57,10 +57,7 @@ def setup_plugin(mediagoblin_app):
     pluginapi.register_template_hooks(
         {'header_extra': header_template})
 
-    # If the engine wants to listen for database changes, then register the
-    # sqlalchemy event hooks.
-    if engine.listen_for_db_changes():
-        add_event_hooks()
+    add_event_hooks()
     return mediagoblin_app
 
 
@@ -76,28 +73,25 @@ def get_engine():
 
 
 def comment_change(mapper, connection, comment):
-    """ If a comment on a media entry has been removed, reindex the entry.
-    """
+    """If a comment on a media entry has been removed, reindex the entry."""
     if isinstance(comment.target(), MediaEntry):
-        get_engine().add_entry(comment.target())
+        get_engine().add_media_entry(comment.target())
 
 
 def media_entry_updated(mapper, connection, media_entry):
-    """ If a comment on a media entry has been removed, reindex the entry.
-    """
-    get_engine().add_entry(media_entry)
+    """If a comment on a media entry has been removed, reindex the entry."""
+    get_engine().add_media_entry(media_entry)
 
 
 def media_entry_deleted(mapper, connection, media_entry):
-    """ Deletes media entries from index when they are removed from database.
-    """
-    get_engine().delete_entry(media_entry.id)
+    """Delete a media entry"""
+    get_engine().remove_media_entry(media_entry.id)
 
 
 def add_event_hooks():
     for event_type in 'after_delete', 'after_update', 'after_insert':
-        event.listens(Comment, event_type, comment_change)
+        event.listen(Comment, event_type, comment_change)
 
-    event.listens(MediaEntry, 'after_delete', media_entry_deleted)
-    event.listens(MediaEntry, 'after_update', media_entry_updated)
-    event.listens(MediaEntry, 'after_insert', media_entry_updated)
+    event.listen(MediaEntry, 'after_delete', media_entry_deleted)
+    event.listen(MediaEntry, 'after_update', media_entry_updated)
+    event.listen(MediaEntry, 'after_insert', media_entry_updated)

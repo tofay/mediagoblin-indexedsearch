@@ -26,15 +26,11 @@ class MediaNotProcessedError(Exception):
 
 class BaseEngine(object):
 
-    def listen_for_db_changes(self):
-        """Should this engine be notified of database events?
+    def add_media_entry(self, media):
+        raise NotImplementedError
 
-        Returns:
-            True if this engine should be notified when a media entry is added,
-            False otherwise.
-
-        """
-        return True
+    def remove_media_entry(self, media_entry_id):
+        raise NotImplementedError
 
     def update_index(self):
         """Update the index to make it consistent with the database."""

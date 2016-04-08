@@ -17,13 +17,14 @@ from __future__ import unicode_literals
 
 import os
 import datetime
-from indexedsearch.backends.whoosh import Engine, INDEX_NAME
 import whoosh.index
 import whoosh.qparser
 import whoosh.writing
 from mediagoblin.tools import pluginapi
 from mediagoblin.db.base import Session
 from mediagoblin.tests.tools import (fixture_media_entry)
+from indexedsearch.backends.whoosh import Engine, INDEX_NAME
+from indexedsearch import get_engine
 
 
 def test_index_creation():
@@ -53,3 +54,87 @@ def test_index_creation():
         qp = whoosh.qparser.QueryParser('title', schema=engine2.index.schema)
         query = qp.parse('Test media entry')
         assert len(searcher.search(query)) == 1
+
+
+def test_update_index(test_app):
+    """
+    Test that the update_index method:
+    - updates any media entries whose time in the index is prior to the updated
+    attribute of the media entry itself
+    - ignores any media_entry whose time in the index matches the updated
+    attribute of the media entry itself
+    - deletes entries from the index that don't exist in the database.
+    - adds entries that are missing from the index
+    """
+    dirname = pluginapi.get_config('indexedsearch').get('INDEX_DIR')
+
+    fake_time = datetime.datetime.utcnow()
+    media_a = fixture_media_entry(title='mediaA', save=False,
+                                  expunge=False, fake_upload=False,
+                                  state='processed')
+    media_b = fixture_media_entry(title='mediaB', save=False,
+                                  expunge=False, fake_upload=False,
+                                  state='processed')
+    media_c = fixture_media_entry(title='mediaC', save=False,
+                                  expunge=False, fake_upload=False,
+                                  state='processed')
+    media_a.description = 'DescriptionA'
+    media_b.description = 'DescriptionB'
+    media_c.description = 'DescriptionC'
+    Session.add(media_a)
+    Session.add(media_b)
+    Session.add(media_c)
+    Session.commit()
+
+    ix = whoosh.index.open_dir(dirname, indexname=INDEX_NAME)
+    with whoosh.writing.AsyncWriter(ix) as writer:
+        # Mess up the index by:
+        # - changing the time of media_a to a fake time before it was created
+        # and changing the description
+        # - changing the description of media_b
+        # - adding a fake entry
+        # - deleting an entry
+        writer.update_document(title='{0}'.format(media_a.title),
+                               description='fake_description_a',
+                               media_id=media_a.id,
+                               time=fake_time)
+
+        writer.update_document(title='{0}'.format(media_b.title),
+                               description='fake_description_b',
+                               media_id=media_b.id,
+                               time=media_b.updated)
+
+        writer.update_document(title='fake document',
+                               description='fake_description_d',
+                               media_id=29,
+                               time=fake_time)
+        writer.delete_by_term('media_id', media_c.id)
+
+    engine = get_engine()
+    engine.update_index()
+
+    with engine.index.searcher() as searcher:
+        # We changed the time in the index for media_a, so it should have
+        # been audited.
+        qp = whoosh.qparser.QueryParser('description',
+                                        schema=engine.index.schema)
+        query = qp.parse('fake_description_a')
+        assert len(searcher.search(query)) == 0
+        query = qp.parse('DescriptionA')
+        fields = searcher.search(query)[0]
+        assert fields['media_id'] == media_a.id
+
+        # media_b shouldn't have been audited, because we didn't change the
+        # time, so should still have a fake description.
+        query = qp.parse('fake_description_b')
+        fields = searcher.search(query)[0]
+        assert fields['media_id'] == media_b.id
+
+        # media_c should have been re-added to the index
+        query = qp.parse('DescriptionC')
+        fields = searcher.search(query)[0]
+        assert fields['media_id'] == media_c.id
+
+        # The fake entry, media_d, should have been deleted
+        query = qp.parse('fake_description_d')
+        assert len(searcher.search(query)) == 0

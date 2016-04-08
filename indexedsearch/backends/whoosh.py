@@ -34,7 +34,7 @@ class Engine(BaseEngine):
             self.index = whoosh.index.open_dir(self.index_dir,
                                                indexname=INDEX_NAME)
         except whoosh.index.EmptyIndexError:
-            self.index = self.maybe_create_index()
+            self.maybe_create_index()
 
     def update_index(self):
         """ Make an index consistent with the database.
@@ -80,7 +80,7 @@ class Engine(BaseEngine):
                     if media.id in to_index or media.id not in indexed_media:
                         # This is either a entry that's changed, or a new entry
                         # that wasn't indexed before. So index it!
-                        self.index_entry(media, writer)
+                        self.add_media_entry(media, writer)
 
     def add_media_entry(self, media, writer=None):
         """Adds a media entry to the index using a writer.
