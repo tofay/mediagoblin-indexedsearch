@@ -23,14 +23,14 @@ import celery
 import whoosh.index
 import whoosh.fields
 import whoosh.writing
-from mediagoblin.db.models import MediaEntry
+from mediagoblin.db.models import MediaEntry, Comment
 from mediagoblin.tools import pluginapi
 from sqlalchemy import event
 
 
 _log = logging.getLogger(__name__)
 INDEX_NAME = 'media_entries'
-DEFAULT_SEARCH_FIELDS = ['title', 'description', 'tag']
+DEFAULT_SEARCH_FIELDS = ['title', 'description', 'tag', 'comment']
 """ List of the index fields that are searched by default.
 """
 
@@ -45,6 +45,7 @@ class MediaEntrySchema(whoosh.fields.SchemaClass):
     # collection = whoosh.fields.KEYWORD(commas=True)
     time = whoosh.fields.DATETIME(stored=True)
     user = whoosh.fields.TEXT
+    comment = whoosh.fields.TEXT
 
 
 def index_entry(writer, media):
@@ -64,12 +65,14 @@ def index_entry(writer, media):
         return
 
     tags = ' '.join([tag['name'] for tag in media.tags])
+    comments = '\n'.join([comment.content for comment in media.get_comments()])
     # collections = u','.join([col.title for col in media.collections])
     index_fields = {'title': media.title,
                     'description': media.description,
                     'media_id': media.id,
                     'time': media.updated,
-                    'tag': tags}
+                    'tag': tags,
+                    'comment': comments}
 
     if media.get_actor:
         index_fields['user'] = media.get_actor.username
@@ -191,6 +194,23 @@ def delete_entry(media_entry):
 
 @event.listens_for(MediaEntry, 'after_delete')
 def media_entry_deleted(mapper, connection, media_entry):
-    """ sqlalchemy hook for removing media entries
+    """ Deletes media entries from index when they are removed from database.
     """
     delete_entry(media_entry)
+
+
+@event.listens_for(Comment, 'after_update')
+@event.listens_for(Comment, 'after_insert')
+def comment_change(mapper, connection, comment):
+    """ If a media entry has been commented on, then update the index.
+    """
+    if isinstance(comment.target(), MediaEntry):
+        update_entry(comment.target())
+
+
+@event.listens_for(Comment, 'after_delete')
+def comment_deleted(mapper, connection, comment):
+    """ If a comment on a media entry has been removed, reindex the entry.
+    """
+    if isinstance(comment.target(), MediaEntry):
+        update_entry(comment.target())

@@ -15,16 +15,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import logging
+import importlib
+
+from sqlalchemy import event
+
+from mediagoblin.db.models import MediaEntry, Comment
 from mediagoblin.tools import pluginapi
-from indexedsearch.lib import update_index, maybe_create_index
 
 _log = logging.getLogger(__name__)
 PLUGIN_DIR = os.path.dirname(__file__)
 
 
-def setup_plugin():
-    _log.info('Setting up indexed search...')
+def setup_plugin(mediagoblin_app):
+    _log.info('Setting up search plugin')
     config = pluginapi.get_config('indexedsearch')
+    engine = get_engine()
+    engine.update_index()
 
     if config.get('USERS_ONLY'):
         view = 'user_search_results_view'
@@ -50,21 +56,48 @@ def setup_plugin():
 
     pluginapi.register_template_hooks(
         {'header_extra': header_template})
-    maybe_create_index(config.get('INDEX_DIR'))
 
-
-def setup_index(mediagoblin_app):
-    config = pluginapi.get_config('indexedsearch')
-    dirname = config.get('INDEX_DIR')
-    update_index(dirname)
+    # If the engine wants to listen for database changes, then register the
+    # sqlalchemy event hooks.
+    if engine.listen_for_db_changes():
+        add_event_hooks()
     return mediagoblin_app
 
 
-# def update_collection_item(collection_item):
-#    update_entry.subtask().delay(collection_item.get_object())
-
 hooks = {
-    'setup': setup_plugin,
-    'wrap_wsgi': setup_index,  # not really designed for this purpose...
-    # 'collection_add_media': update_collection_item
+    'wrap_wsgi': setup_plugin
 }
+
+
+def get_engine():
+    config = pluginapi.get_config('indexedsearch')
+    backend_module = importlib.import_module(config.get('BACKEND'))
+    return backend_module.Engine(**config)
+
+
+def comment_change(mapper, connection, comment):
+    """ If a comment on a media entry has been removed, reindex the entry.
+    """
+    if isinstance(comment.target(), MediaEntry):
+        get_engine().add_entry(comment.target())
+
+
+def media_entry_updated(mapper, connection, media_entry):
+    """ If a comment on a media entry has been removed, reindex the entry.
+    """
+    get_engine().add_entry(media_entry)
+
+
+def media_entry_deleted(mapper, connection, media_entry):
+    """ Deletes media entries from index when they are removed from database.
+    """
+    get_engine().delete_entry(media_entry.id)
+
+
+def add_event_hooks():
+    for event_type in 'after_delete', 'after_update', 'after_insert':
+        event.listens(Comment, event_type, comment_change)
+
+    event.listens(MediaEntry, 'after_delete', media_entry_deleted)
+    event.listens(MediaEntry, 'after_update', media_entry_updated)
+    event.listens(MediaEntry, 'after_insert', media_entry_updated)
