@@ -138,3 +138,69 @@ def test_update_index(test_app):
         # The fake entry, media_d, should have been deleted
         query = qp.parse('fake_description_d')
         assert len(searcher.search(query)) == 0
+
+
+def test_media_entry_change_and_delete(test_app):
+    """
+    Test that media entry additions/modification/deletes automatically show
+    up in the index.
+
+    """
+    dirname = pluginapi.get_config('indexedsearch').get('INDEX_DIR')
+
+    media_a = fixture_media_entry(title='mediaA', save=False,
+                                  expunge=False, fake_upload=False,
+                                  state='processed')
+    media_b = fixture_media_entry(title='mediaB', save=False,
+                                  expunge=False, fake_upload=False,
+                                  state='processed')
+    media_a.description = 'DescriptionA'
+    media_b.description = 'DescriptionB'
+    Session.add(media_a)
+    Session.add(media_b)
+    Session.commit()
+
+    # Check that the media entries are in the index
+    ix = whoosh.index.open_dir(dirname, indexname=INDEX_NAME)
+    with ix.searcher() as searcher:
+        qp = whoosh.qparser.QueryParser('title', schema=ix.schema)
+        query = qp.parse('mediaA')
+        assert searcher.search(query)[0]['media_id'] == media_a.id
+        query = qp.parse('mediaB')
+        assert searcher.search(query)[0]['media_id'] == media_b.id
+
+    # Modify one, and delete the other
+    media_a.title = 'new'
+    media_b.delete()
+
+    # Check that the changes are present in the index
+    with ix.searcher() as searcher:
+        qp = whoosh.qparser.QueryParser('title', schema=ix.schema)
+        query = qp.parse('new')
+        assert searcher.search(query)[0]['media_id'] == media_a.id
+
+        query = qp.parse('mediaB')
+        assert len(searcher.search(query)) == 0
+
+
+def test_unprocess_media_entry(test_app):
+    """
+    Test that media entries that aren't marked as processed are not added to
+    the index.
+
+    """
+    dirname = pluginapi.get_config('indexedsearch').get('INDEX_DIR')
+
+    media_a = fixture_media_entry(title='mediaA', save=False,
+                                  expunge=False, fake_upload=False,
+                                  state='unprocessed')
+    media_a.description = 'DescriptionA'
+    Session.add(media_a)
+    Session.commit()
+
+    # Check that the media entry is not in the index
+    ix = whoosh.index.open_dir(dirname, indexname=INDEX_NAME)
+    with ix.searcher() as searcher:
+        qp = whoosh.qparser.QueryParser('title', schema=ix.schema)
+        query = qp.parse('mediaA')
+        assert len(searcher.search(query)) == 0
