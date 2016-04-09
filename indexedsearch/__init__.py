@@ -26,16 +26,16 @@ _log = logging.getLogger(__name__)
 PLUGIN_DIR = os.path.dirname(__file__)
 
 
-def setup_plugin(mediagoblin_app):
-    _log.info('Setting up search plugin')
+def setup_plugin():
+    """Setup plugin by adding routes and templates to mediagoblin"""
+
+    _log.info('Setting up routes and templates')
     config = pluginapi.get_config('indexedsearch')
-    engine = get_engine()
-    engine.update_index()
 
     if config.get('USERS_ONLY'):
         view = 'user_search_results_view'
     else:
-        view = 'search_resuls_view'
+        view = 'search_results_view'
 
     routes = [
         ('indexedsearch',
@@ -57,12 +57,18 @@ def setup_plugin(mediagoblin_app):
     pluginapi.register_template_hooks(
         {'header_extra': header_template})
 
+
+def setup_engine(mediagoblin_app):
+    """Setup engine by updating the index and adding database hook."""
+    _log.info('Setting up engine')
+    get_engine().update_index()
     add_event_hooks()
     return mediagoblin_app
 
 
 hooks = {
-    'wrap_wsgi': setup_plugin
+    'setup': setup_plugin,
+    'wrap_wsgi': setup_engine
 }
 
 

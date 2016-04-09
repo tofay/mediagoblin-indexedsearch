@@ -49,11 +49,7 @@ def test_index_creation():
 
     # Now open a new engine and check that the entry we just added is in the
     # new engine's index.
-    engine2 = Engine(**config)
-    with engine2.index.searcher() as searcher:
-        qp = whoosh.qparser.QueryParser('title', schema=engine2.index.schema)
-        query = qp.parse('Test media entry')
-        assert len(searcher.search(query)) == 1
+    assert Engine(**config).search('Test media entry') == [1]
 
 
 def test_update_index(test_app):
@@ -146,8 +142,6 @@ def test_media_entry_change_and_delete(test_app):
     up in the index.
 
     """
-    dirname = pluginapi.get_config('indexedsearch').get('INDEX_DIR')
-
     media_a = fixture_media_entry(title='mediaA', save=False,
                                   expunge=False, fake_upload=False,
                                   state='processed')
@@ -161,26 +155,18 @@ def test_media_entry_change_and_delete(test_app):
     Session.commit()
 
     # Check that the media entries are in the index
-    ix = whoosh.index.open_dir(dirname, indexname=INDEX_NAME)
-    with ix.searcher() as searcher:
-        qp = whoosh.qparser.QueryParser('title', schema=ix.schema)
-        query = qp.parse('mediaA')
-        assert searcher.search(query)[0]['media_id'] == media_a.id
-        query = qp.parse('mediaB')
-        assert searcher.search(query)[0]['media_id'] == media_b.id
+    engine = get_engine()
+    assert engine.search('mediaA') == [media_a.id]
+    assert engine.search('mediaB') == [media_b.id]
 
     # Modify one, and delete the other
     media_a.title = 'new'
     media_b.delete()
 
     # Check that the changes are present in the index
-    with ix.searcher() as searcher:
-        qp = whoosh.qparser.QueryParser('title', schema=ix.schema)
-        query = qp.parse('new')
-        assert searcher.search(query)[0]['media_id'] == media_a.id
-
-        query = qp.parse('mediaB')
-        assert len(searcher.search(query)) == 0
+    assert engine.search('new') == [media_a.id]
+    assert engine.search('mediaA') == []
+    assert engine.search('mediaB') == []
 
 
 def test_unprocess_media_entry(test_app):

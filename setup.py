@@ -44,7 +44,7 @@ def readme():
 
 setup(
     name='mediagoblin-indexedsearch',
-    version='0.1dev',
+    version='0.1.dev',
     description=("A search plugin for GNU mediagoblin."),
     long_description=readme(),
     url='https://github.com/tofay/mediagoblin-indexedsearch',

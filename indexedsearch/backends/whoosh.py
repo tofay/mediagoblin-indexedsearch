@@ -4,12 +4,14 @@ import logging
 import whoosh.index
 import whoosh.fields
 import whoosh.writing
+import whoosh.qparser
 
 from mediagoblin.db.models import MediaEntry
 from indexedsearch.backends import BaseEngine, MediaNotProcessedError
 
 _log = logging.getLogger(__name__)
 INDEX_NAME = 'media_entries'
+DEFAULT_SEARCH_FIELDS = ['title', 'description', 'tag', 'comment']
 
 
 class MediaEntrySchema(whoosh.fields.SchemaClass):
@@ -154,3 +156,10 @@ class Engine(BaseEngine):
 
         if commit:
             writer.commit()
+
+    def search(self, query):
+        with self.index.searcher() as searcher:
+            query_string = whoosh.qparser.MultifieldParser(
+                DEFAULT_SEARCH_FIELDS, self.index.schema).parse(query)
+            results = searcher.search(query_string)
+            return [result['media_id'] for result in results]

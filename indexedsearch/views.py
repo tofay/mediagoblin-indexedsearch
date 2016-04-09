@@ -20,11 +20,9 @@ from mediagoblin.tools.pagination import Pagination
 from mediagoblin.tools import pluginapi
 from mediagoblin.meddleware.csrf import csrf_exempt
 
-from indexedsearch.lib import INDEX_NAME, DEFAULT_SEARCH_FIELDS
+from indexedsearch import get_engine
 import indexedsearch.forms
 
-import whoosh.index
-import whoosh.qparser
 import logging
 _log = logging.getLogger(__name__)
 
@@ -52,19 +50,14 @@ def search_results_view(request, page):
         query = request.GET['q']
 
     if query:
-        ix = whoosh.index.open_dir(config.get('INDEX_DIR'),
-                                   indexname=INDEX_NAME)
-        with ix.searcher() as searcher:
-            query_string = whoosh.qparser.MultifieldParser(
-                DEFAULT_SEARCH_FIELDS, ix.schema).parse(query)
-            results = searcher.search(query_string)
-            result_ids = [result['media_id'] for result in results]
+        engine = get_engine()
+        result_ids = engine.search(query)
 
-            if result_ids:
-                matches = MediaEntry.query.filter(
-                    MediaEntry.id.in_(result_ids))
-                pagination = Pagination(page, matches)
-                media_entries = pagination()
+        if result_ids:
+            matches = MediaEntry.query.filter(
+                MediaEntry.id.in_(result_ids))
+            pagination = Pagination(page, matches)
+            media_entries = pagination()
 
     return render_to_response(
         request,

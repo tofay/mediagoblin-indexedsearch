@@ -16,9 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #}
 
-{% extends "indexedsearch/base_search_link.html" %}
-{% block search_link_header %}
-<a class="button_action" href="{{ request.urlgen('indexedsearch') }}">
-  {%- trans %}Search{% endtrans -%}
-</a>
-{% endblock %}
+<p>{{ global_config['plugins']['indexedsearch']['USERS_ONLY'] }}<p>
+<p>{{ global_config['plugins']['indexedsearch'] }}<p>
+{% if request.user or
+      not global_config['plugins']['indexedsearch']['USERS_ONLY']%}
+    {% block search_link_header %}{% endblock %}
+{% endif %}

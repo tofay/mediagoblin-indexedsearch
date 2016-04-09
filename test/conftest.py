@@ -16,22 +16,17 @@
 
 import pytest
 import pkg_resources
-
 from mediagoblin.tests import tools
-from mediagoblin.tools.testing import _activate_testing
 
 
 @pytest.fixture()
 def test_app(request):
+    try:
+        config_file = request.cls.config_file
+    except AttributeError:
+        config_file = 'indexedsearch_mediagoblin.ini'
+
     return tools.get_app(
         request,
         mgoblin_config=pkg_resources.resource_filename(
-            'test', 'indexedsearch_mediagoblin.ini'))
-
-
-@pytest.fixture()
-def pt_fixture_enable_testing():
-    """
-    py.test fixture to enable testing mode in tools.
-    """
-    _activate_testing()
+            'test', config_file))
