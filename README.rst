@@ -24,7 +24,7 @@ Search plugin for GNU Mediagoblin
 
 .. END_BADGES_TAG
 
-N.B Only works with unreleased dev version of mediagoblin (0.9.0)
+N.B Only works with mediagoblin 0.9.0 and later.
 
 ``mediagoblin-indexedsearch`` is a plugin for GNU Mediagoblin that adds support for searching media.
 
