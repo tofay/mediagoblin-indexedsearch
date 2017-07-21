@@ -1,0 +1,11 @@
+*.pyc
+*.pyo
+*~
+*.swp
+*.backup.html
+build/
+.cache/
+.vscode/
+*egg-info/
+dist/
+test_index/
