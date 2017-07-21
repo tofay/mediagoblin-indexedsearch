@@ -46,6 +46,16 @@ but uses a search index for queries.
 Setting up the search plugin
 ===========================
 
+Checkout this repository with::
+
+   git clone https://github.com/tofay/mediagoblin-indexedsearch.git
+
+Then install the plugin into your virtualenv for mediagoblin::
+
+   cd mediagoblin-indexedsearch/
+   /path/to/mediagoblin/bin/python setup.py install
+
+
 Enable the plugin by adding the following line to the ``[plugins]`` section of your mediagoblin config file.
 
 [[indexedsearch]]
