@@ -2,7 +2,7 @@ Search plugin for GNU Mediagoblin
 ###############
 
 |license_badge| |pypi_badge| |version_badge|
-|travis_badge| |status_badge|
+|status_badge|
 
 .. |license_badge| image:: https://img.shields.io/pypi/l/mediagoblin-indexedsearch.svg
    :target: https://en.wikipedia.org/wiki/Affero_General_Public_License
