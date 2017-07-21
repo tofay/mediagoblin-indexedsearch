@@ -16,8 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #}
 
-<p>{{ global_config['plugins']['indexedsearch']['USERS_ONLY'] }}<p>
-<p>{{ global_config['plugins']['indexedsearch'] }}<p>
 {% if request.user or
       not global_config['plugins']['indexedsearch']['USERS_ONLY']%}
     {% block search_link_header %}{% endblock %}
